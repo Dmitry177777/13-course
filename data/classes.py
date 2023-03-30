@@ -1,30 +1,47 @@
 import json
 import os
-import datetime
+# import datetime
+from abc import ABC
 
-from googleapiclient.discovery import build
-import isodate
-class Channel ():
-    """"Класс канала"""
-    # all =[]
-    # pay_rate = 1
+from requests import get, post, put, delete
 
-    def __init__(self,  channel_id):
-        youtube = Channel.get_service()
-        self.channel = youtube.channels().list(id=channel_id, part='snippet,statistics').execute()
+# import isodate
 
-        self.kind = self.channel.get ('kind') # kind
-        #self.url = self.channel.get ("etag") # etag
-        self.pageInfo = self.channel.get ("pageInfo") # pageInfo
-        self.items = self.channel.get("items")  # items
+# class Engine(ABC):
+#     @abstractmethod
+#     def get_request(self):
+#         pass
+#
+#     @staticmethod
+#     def get_connector(file_name):
+#         """ Возвращает экземпляр класса Connector """
+#         pass
 
-        self.channel_id = channel_id # - id канала
-        self.title = self.channel.get('items',{})[0].get('snippet',{}).get('title')  # - название канала
-        self.description = self.channel.get('items',{})[0].get('snippet',{}).get('description') # - описание канала
-        self.url = f'https://www.youtube.com/channel/{channel_id}'   # - ссылка на канал
-        self.subscriberCount = self.channel.get('items',{})[0].get('statistics',{}).get('subscriberCount')  # - количество подписчиков
-        self.video_count = self.channel.get('items',{})[0].get('statistics',{}).get('videoCount') # - количество видео
-        self.viewCount = self.channel.get('items',{})[0].get('statistics',{}).get('viewCount')  # - общее количество просмотров
+
+class HH ():
+    """"Класс HH"""
+
+    def __init__(self,  https_id):
+        self.https_id = https_id
+        self.response = HH.get_service(https_id)
+
+        # self.channel = hh.channels().list(id=channel_id, part='snippet,statistics').execute()
+
+        # par = {'per_page': '10', 'page': i}
+        # requests.get(self.url, params=par)
+
+        # self.kind = self.channel.get ('kind') # kind
+        # #self.url = self.channel.get ("etag") # etag
+        # self.pageInfo = self.channel.get ("pageInfo") # pageInfo
+        # self.items = self.channel.get("items")  # items
+        #
+        # self.channel_id = channel_id # - id канала
+        # self.title = self.channel.get('items',{})[0].get('snippet',{}).get('title')  # - название канала
+        # self.description = self.channel.get('items',{})[0].get('snippet',{}).get('description') # - описание канала
+        # self.url = f'https://www.youtube.com/channel/{channel_id}'   # - ссылка на канал
+        # self.subscriberCount = self.channel.get('items',{})[0].get('statistics',{}).get('subscriberCount')  # - количество подписчиков
+        # self.video_count = self.channel.get('items',{})[0].get('statistics',{}).get('videoCount') # - количество видео
+        # self.viewCount = self.channel.get('items',{})[0].get('statistics',{}).get('viewCount')  # - общее количество просмотров
 
         # Channel.to_json(self)
 
@@ -88,129 +105,12 @@ class Channel ():
 
         return self.log
     @staticmethod
-    def get_service():
+    def get_service(https):
         # API_KEY скопирован из гугла и вставлен в переменные окружения
-        api_key: str = os.getenv('API_KEY')
+        # api_key: str = os.getenv('API_KEY')
 
-        # создать специальный объект для работы с API
-        youtube = build('youtube', 'v3', developerKey=api_key)
-        return youtube
+        response = get(https)
 
 
-class Video(Channel):
-    def __init__(self, video_id):
-        try:
-            self.video_id = video_id
-            youtube = Video.get_service()
-            self.video = youtube.videos().list(id=video_id, part='snippet, recordingDetails, contentDetails, statistics').execute()
-            self.title = self.video.get('items', {})[0].get('snippet', {}).get('title')  # - название канала
-            self.subscriberCount = self.video.get('items', {})[0].get('statistics', {}).get('subscriberCount')  #!!!!!! - количество подписчиков
-            self.video_count = self.video.get('items', {})[0].get('statistics', {}).get('videoCount')  #!!!!! - количество видео
-            self.viewCount = self.video.get('items', {})[0].get('statistics', {}).get('viewCount')  # - общее количество просмотров
-        except(AttributeError, IndexError):
-            print("введено id, с которым нет данные о видео по API")
-            self.video = None
-            self.title = None
-            self.subscriberCount = None
-            self.video_count = None
-            self.viewCount = None
-            self.like_count = None # такого атрибута не было
+        return response
 
-    def print_info(self):
-        """Метод вывода данных о канале"""
-        self.log = json.dumps(self.video, indent=2, ensure_ascii=False)
-
-        return self.log
-
-    def __repr__(self):
-        return f'Video({self.title}, {self.video_count},{self.viewCount},{self.subscriberCount})'
-
-    def __str__(self):
-        return f'Video: {self.title}'
-class PLVideo (Video):
-    def __init__(self, video_id, plv_id):
-        self.plv_id = plv_id
-        self.video_id = video_id
-
-
-
-        youtube = PLVideo.get_service()
-        self.plv_item = youtube.playlistItems().list(playlistId = plv_id, part='id,snippet,contentDetails').execute()
-        self.plv_=youtube.playlists().list(id = plv_id,  part='id,snippet').execute()
-        for plv1 in self.plv_item.get('items'):
-            if plv1.get('snippet', {}).get('resourceId', {}).get('videoId')  == self.video_id:
-
-                self.title = plv1.get('snippet', {}).get('title')  # - название видео
-        self.plv =self.plv_.get('items',{})[0].get('snippet', {}).get('title')
-
-
-    def print_info(self):
-        """Метод вывода данных о канале"""
-        self.log1 = json.dumps(self.plv_item, indent=2, ensure_ascii=False)
-        self.log2 = json.dumps(self.plv_, indent=2, ensure_ascii=False)
-        return self.log1 + self.log2
-
-    def __repr__(self):
-        return f'PLVideo({self.title}, {self.video_count},{self.viewCount},{self.subscriberCount})'
-
-    def __str__(self):
-        return f'{self.title} ({self.plv})'
-
-
-class PlayList (PLVideo):
-    def __init__(self, plv_id):
-        super().__init__(self, plv_id)
-        self.url = f'https://www.youtube.com/playlist?list=/{plv_id}'  # - ссылка на плейлист
-
-        # self.video
-        # self.plv_item
-
-
-    @property
-    def total_duration (self):
-
-        youtube = Channel.get_service()
-        video_ids: list[str] = [video['contentDetails']['videoId'] for video in self.plv_item['items']]
-        response = youtube.videos().list(part='contentDetails,statistics', id=','.join(video_ids)).execute()
-
-        total_duration = datetime.timedelta()
-        for video in response['items']:
-            iso_8601_duration = video['contentDetails']['duration']
-            duration = isodate.parse_duration(iso_8601_duration)
-            total_duration += duration
-
-        self.total_seconds = total_duration.total_seconds()
-
-        return total_duration
-
-    # def total_seconds(self, total_duration):
-    #     total_seconds = total_duration
-    #     total = total_duration.split(":")
-    #
-    #
-    #     return f'{total_seconds}'
-
-
-
-    def show_best_video (self):
-
-        youtube = Channel.get_service()
-        video_ids: list[str] = [video['contentDetails']['videoId'] for video in self.plv_item['items']]
-        response = youtube.videos().list(part='snippet,statistics', id=','.join(video_ids)).execute()
-
-        max = 0
-        for video in response['items']:
-            like_count: int  = int (video['statistics']['likeCount'])
-            video_title: str = video['snippet']['title']
-
-            if max < like_count:
-                max = like_count
-                video_max = video_title
-                video_url: str = f" https://youtu.be/{video['id']}"  # - ссылка на видео
-
-        return print(f'{video_max}, {max} лайков, url: {video_url}')
-
-
-
-    def __repr__(self):
-        return f'PlayList({self.plv},)'
