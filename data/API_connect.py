@@ -14,11 +14,9 @@ class Engine(ABC):
     def get_vacancies(self):
         pass
 
-    # @staticmethod
-    # def get_connector(file_name):
-    #     """ Возвращает экземпляр класса Connector """
-    #     pass
-
+    @abstractmethod
+    def get_page(self, page=0):
+        pass
 class Vacancy ():
     """"Класс Vacancy"""
 
@@ -83,11 +81,15 @@ class Vacancy ():
                              "currency": i.get('objects',{})[0].get("currency") # Валюта. Список возможных значений:  rub — рубль  uah — гривна  uzs — сум
                              })
 
-        sorted(self.list, reverse=True, key= itemgetter ("payment_to"))
+        sorted(self.list, reverse=True, key= itemgetter ("payment_from"))
 
         return self.list
 
+    def __repr__(self):
+        return f'Vacancy({self.search_query}, {self.top_n})'
 
+    def __str__(self):
+        return f'{self.search_query}, {self.top_n}'
 
 class SuperJobAPI (Engine):
     """"Класс SuperJobAPI"""
