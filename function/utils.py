@@ -1,18 +1,18 @@
 
-from data.classes import HeadHunterAPI, SuperJobAPI
+from data.API_connect import HeadHunterAPI, SuperJobAPI
 from requests import get, post, put, delete
 
 # response = get ('https://api.hh.ru/')
 # print(response)
 
 # Создание экземпляра класса для работы с API сайтов с вакансиями
-hh_api = HeadHunterAPI()
-superjob_api = SuperJobAPI()
+# hh_api = HeadHunterAPI()
+# superjob_api = SuperJobAPI()
 
-
-print (hh_api.response.text)
-# print (hh.data)
-
+# # Получение вакансий с разных платформ
+# hh_vacancies = HeadHunterAPI("Python")
+superjob_vacancies = SuperJobAPI("Python")
+print (superjob_vacancies.job_list)
 
 
 # # Создание экземпляра класса для работы с API сайтов с вакансиями
@@ -32,21 +32,7 @@ print (hh_api.response.text)
 # json_saver.get_vacancies_by_salary("100 000-150 000 руб.")
 # json_saver.delete_vacancy(vacancy)
 #
-# # Функция для взаимодействия с пользователем
-# def user_interaction():
-#     platforms = ["HeadHunter", "SuperJob"]
-#     search_query = input("Введите поисковый запрос: ")
-#     top_n = int(input("Введите количество вакансий для вывода в топ N: "))
-#     filter_words = input("Введите ключевые слова для фильтрации вакансий: ").split()
-#     filtered_vacancies = filter_vacancies(hh_vacancies, superjob_vacancies, filter_words)
 #
-#     if not filtered_vacancies:
-#         print("Нет вакансий, соответствующих заданным критериям.")
-#         return
-#
-#     sorted_vacancies = sort_vacancies(filtered_vacancies)
-#     top_vacancies = get_top_vacancies(sorted_vacancies, top_n)
-#     print_vacancies(top_vacancies)
 #
 #
 # if __name__ == "__main__":
