@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import time
 from requests import get, post, put, delete
 from operator import *
-# import isodate
+
 
 
 
@@ -29,16 +29,6 @@ class Vacancy ():
         self.top_n = top_n # количество листов вакансий для вывода
         self.vacancy = self.get_vacancies()
 
-
-        # self.platforms = platform # платформа ["HeadHunter", "SuperJob"]
-        # self.profession = '' # название вакансии
-        # self.candidat = '' # 	Требования к кандидату
-        # self.work = '' # Должностные обязанности
-        # self.compensation = '' # Условия работы
-        # self.profession_url = '' # ссылка на вакансию
-        # self.payment_from = None #Сумма оклада от
-        # self.payment_to =None #Сумма оклада до
-        # self.currency = '' # Валюта. Список возможных значений:  rub — рубль  uah — гривна  uzs — сум
         pass
 
     def get_vacancies(self):
@@ -94,7 +84,7 @@ class Vacancy ():
                     except:
                         pass
 
-        self.list = sorted(self.list, reverse=True, key= itemgetter ("payment_from"))
+        # self.list = sorted(self.list, reverse=True, key= itemgetter ("payment_from"))
 
         return self.list
 
