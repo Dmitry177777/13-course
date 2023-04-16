@@ -4,10 +4,6 @@ from abc import ABC, abstractmethod
 import time
 from requests import get, post, put, delete
 
-
-
-
-
 class Engine(ABC):
     @abstractmethod
     def get_vacancies(self):
@@ -123,8 +119,11 @@ class SuperJobAPI (Engine):
         req = get(self.url, headers=headers, params=par)  # Посылаем запрос к API
         data = req.json()  # Декодируем его ответ, чтобы Кириллица отображалась корректно
         # проверка на наличие данных на странице
-        if data.get('objects', {})[0].get('id') is not None:
-            self.list.append(data)
+        try:
+            if data.get('objects', {})[0].get('id') is not None:
+                self.list.append(data)
+        except:
+            pass
         req.close()
         return data
 
@@ -136,10 +135,12 @@ class SuperJobAPI (Engine):
 
             # делаем обращение к функции get_page
             r_page = self.get_page(page)
-
-            # Проверка на наличие данных на странице
-            if r_page.get('objects', {})[0].get('id') is None:
-                break
+            try:
+                # Проверка на наличие данных на странице
+                if r_page.get('objects', {})[0].get('id') is None:
+                    break
+            except:
+                pass
 
             # Необязательная задержка, но чтобы не нагружать сервисы hh, оставим. 5 сек мы может подождать
             time.sleep(0.5)
@@ -183,8 +184,11 @@ class HeadHunterAPI (Engine):
         req = get(self.url, params=par)  # Посылаем запрос к API
         data = req.json()  # Декодируем его ответ, чтобы Кириллица отображалась корректно
         # проверка на наличие данных на странице
-        if  data.get('items',{})[0].get('id') is not None:
-            self.list.append(data)
+        try:
+            if  data.get('items',{})[0].get('id') is not None:
+                self.list.append(data)
+        except:
+            pass
         req.close()
         return data
 
@@ -198,10 +202,11 @@ class HeadHunterAPI (Engine):
             r_page = self.get_page(page)
 
             # Проверка на наличие данных на странице
-            if r_page.get('items',{})[0].get('id') is None:
-                break
-
-
+            try:
+                if r_page.get('items',{})[0].get('id') is None:
+                    break
+            except:
+                pass
 
             # Необязательная задержка, но чтобы не нагружать сервисы hh, оставим. 5 сек мы может подождать
             time.sleep(0.5)
