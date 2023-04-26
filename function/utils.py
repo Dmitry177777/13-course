@@ -1,58 +1,49 @@
+from requests import get, post, put, delete
+import json
+import psycopg2
 
-from data.API_connect import HeadHunterAPI, SuperJobAPI, Vacancy
-from operator import *
+list = []
+def get_vacancies():
+    url ='https://api.hh.ru/vacancies' # запрос вакансий HH
+    vacancy = input (f'введите искомую вакансию \n')
+    page =0
+    # Справочник для параметров GET-запроса
+    par = {
+        'text': vacancy, # Текст фильтра. В имени должно быть слово job_title
+        'area': '1', # Поиск ощуществляется по вакансиям htubjyf 113 (1 - город Москва)
+        'per_page': '20', # Кол-во вакансий на 1 странице
+        'page': page # Индекс страницы поиска на HH
+           }
 
-# Фильтрация типов платформ
-platforms=0
-while not (platforms in  [1, 2, 3]):
-    platforms = int(input('выберите платформу 1 - "HeadHunter", 2- "SuperJob", 3 - "HeadHunter"+"SuperJob"\n'))
-    if platforms in [1, 2, 3]:
-        print("платформа успешно введена")
-    else:
-        print("ошибка ввода")
+    req = get(url, params=par)  # Посылаем запрос к API
+    data = req.json()  # Декодируем его ответ, чтобы Кириллица отображалась корректно
+    # проверка на наличие данных на странице
+    try:
+        if  data.get('items',{})[0].get('id') is not None:
+            list.append(data)
+    except:
+        pass
+    req.close()
 
-search_query = input('Введите поисковый запрос: ')
-top_n = int(input("Введите количество вакансий для вывода в топ N: "))
-
-
-
-# # Создание экземпляра класса для работы с вакансиями
-vacancy = Vacancy(platforms,search_query,top_n)
-
-# Настраиваемая сортировка по полям  "payment_from" и "payment_to"
-payment=0
-while not (payment in  [1, 2, 3]):
-    payment = int(input('выберите сортировку по параметру\n "payment_from": 1 - уменьшение, 2- увеличение\n  "payment_to": 3 - уменьшение, 4- увеличение\n  5- без сортировки \n'))
-    if payment == 1:
-        print("сортировка 'payment_from' на уменьшение")
-        vacancy.list = sorted(vacancy.list, reverse=True, key=itemgetter("payment_from"))
-    elif payment == 2:
-        print("сортировка 'payment_from' на увеличение")
-        vacancy.list = sorted(vacancy.list, reverse=False, key=itemgetter("payment_from"))
-    elif payment == 3:
-        print("сортировка 'payment_to' на уменьшение")
-        vacancy.list = sorted(vacancy.list, reverse=True, key=itemgetter("payment_to"))
-    elif payment == 4:
-        print("сортировка 'payment_to' на увеличение")
-        vacancy.list = sorted(vacancy.list, reverse=False, key=itemgetter("payment_to"))
-    elif payment == 5:
-        print("без сортировки")
-    else:
-        print("ошибка ввода")
-
-# Фильтрация по ключевым словам в поле 'profession'
-profession = input('Введите слово содержащаеся в разделе "profession" (если значение не введено фильтрация не производится): \n')
+    return list
 
 
+# Создаем подключение к PosgrySQL
+conn = psycopg2.connect(host='localhost', user='postgres', password='171717')
 
-ii=0
-#Печать полученного списка
-for i in vacancy.list:
-    if len(profession)>0:
-        if profession not in i.get('profession'):
-            continue
+# включаем автоматическое сохранение изменений в БД
+conn.autocommit = True
+data_base_name = 'base'
 
-    ii+=1
-    print(i)
-    if ii == int(top_n):
-        break
+try:
+    with conn.cursor() as cur:
+        # проверка на наличе БД с требуемым именем
+        exists = cur.execute(f"SELECT COUNT(*) = 0 FROM pg_catalog.pg_database WHERE datname = '{data_base_name}'")
+        # если такой БД нет мы ее создаем
+        if not exists:
+            cur.execute(f'CREATE DATABASE  "{data_base_name}"')
+
+except:
+    raise
+finally:
+    conn.close()
